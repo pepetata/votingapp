@@ -1,0 +1,132 @@
+doctype html
+html(lang="en",ng-app="poll")
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    meta(name="description", content="")
+    meta(name="author", content="")
+    title Navbar Template for Bootstrap
+    // Bootstrap core CSS
+    link(rel="stylesheet",href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
+    link(rel="stylesheet",href="/public/css/main.css")
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.js")
+    script(src="/public/js/main.js")
+      
+  body(ng-controller="PollController as pollCtrl")
+    .container
+      // Static navbar
+      div
+        .navbar.navbar-default(role="navigation")
+          .container-fluid
+            .navbar-header
+              button.navbar-toggle(type="button", data-toggle="collapse", data-target=".navbar-collapse")
+                span.sr-only Toggle navigation
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+              a.navbar-brand(href="#") Voting App
+            .navbar-collapse.collapse
+              ul.nav.navbar-nav.navbar-right
+                li.active
+                  a(href="./") Home
+                li(ng-show="! pollCtrl.user.logged")
+                  a(data-toggle="modal",href="#signInModal") Sign In
+                li(ng-show="! pollCtrl.user.logged")
+                  a(data-toggle="modal",href="#signUpModal") Sign Up
+                li(ng-show="pollCtrl.user.logged")
+                  a(href="/newPoll") New Poll
+                li(ng-show="pollCtrl.user.logged")
+                  a(href="/myPolls") My Polls
+                li(ng-show="pollCtrl.user.logged")
+                  a(href="",ng-click="pollCtrl.signOutUser()") Sign Out
+            // /.nav-collapse
+        // /.container-fluid
+      <!-- Sign In Modal -->
+      .modal.fade(id="signInModal",tabindex="-1",role="dialog", aria-labelledby="myModalLabel")
+        .modal-dialog(role="document")
+          .modal-content
+            .modal-header
+              button.close(type="button" ,data-dismiss="modal",aria-label="Close") x
+              h4.modal-title(id="myModalLabel") Sign In
+            .modal-body
+              form(name="signInForm", novalidate, ng-submit="signInForm.$valid && pollCtrl.loginUser(pollCtrl.user)" )
+                h2-heading Please sign up
+                .form-group
+                  label(for="email") Email address or account name
+                  input.form-control(type="email", id="email", name="email", ng-model="pollCtrl.user.email",placeholder="Email or account name", required)
+                  div.error(ng-show="signInForm.$submitted || signInForm.email.$touched")
+                    span(ng-show="signInForm.email.$error.required") Tell us your email.
+                    span(ng-show="signInForm.email.$error.email") This is not a valid email.
+                .form-group
+                  label(for="password") Password
+                  input.form-control(type="password", id="password", name="password", ng-model="pollCtrl.user.password", placeholder="Password", required)
+                  div.error(ng-show="signInForm.$submitted || signInForm.password.$touched")
+                    span(ng-show="signInForm.password.$error.required") Enter a new password
+                div.error.text-center(ng-show="pollCtrl.user.error")
+                  span {{pollCtrl.user.errorMsg}}
+                .modal-footer
+                  button.btn.btn-default(type="button", data-dismiss="modal") Cancel
+                  button.btn.btn-primary(type="submit") Sign In
+      <!-- Sign Up Modal -->
+      .modal.fade(id="signUpModal",tabindex="-1",role="dialog", aria-labelledby="myModalLabel")
+        .modal-dialog(role="document")
+          .modal-content
+            .modal-header
+              button.close(type="button" ,data-dismiss="modal",aria-label="Close") x
+              h4.modal-title(id="myModalLabel") Sign Up
+            .modal-body
+              form(name="userForm", novalidate,  ng-submit="userForm.$valid && pollCtrl.addUser(poll.user)" )
+                h2-heading Please sign up
+                .form-group
+                  label(for="email") Email address or account name
+                  input.form-control(type="email", id="email", name="email", ng-model="pollCtrl.user.email",placeholder="Email or account name", required)
+                  div.error(ng-show="userForm.$submitted || userForm.email.$touched")
+                    span(ng-show="userForm.email.$error.required") Tell us your email.
+                    span(ng-show="userForm.email.$error.email") This is not a valid email.
+                .form-group
+                  label(for="password") Password
+                  input.form-control(type="password", id="password", name="password", ng-model="pollCtrl.user.password", placeholder="Password", required)
+                  div.error(ng-show="userForm.$submitted || userForm.password.$touched")
+                    span(ng-show="userForm.password.$error.required") Enter a new password
+                .form-group
+                  label(for="password2") Re-type Password
+                  input.form-control(type="password", id="password2", name="password2",  ng-model="pollCtrl.user.password2",placeholder="Same password",required)
+                  div.error(ng-show="userForm.$submitted || userForm.password2.$touched")
+                    span(ng-show="userForm.password2.$error.required") Re-type your new password
+                div.error.text-center(ng-show="pollCtrl.user.error")
+                  span {{pollCtrl.user.errorMsg}}
+                .modal-footer
+                  button.btn.btn-default(type="button", data-dismiss="modal") Cancel
+                  button.btn.btn-primary(type="submit") Sign Up
+      <!-- Message Modal -->
+      .modal.fade(id="msgModal",tabindex="-1",role="dialog", aria-labelledby="myModalLabel")
+        .modal-dialog.modal-sm(role="document")
+          .modal-content
+            .modal-header
+              button.close(type="button" ,data-dismiss="modal",aria-label="Close") x
+              h4.modal-title(id="myModalLabel") Message
+            .modal-body
+              div#msg
+            .modal-footer
+               button.btn.btn-default(type="button", data-dismiss="modal") Ok
+
+      div.text-center.pollbody
+        h1 List of Polls
+        h3 Select one to vote
+        div
+          table.table-bordered.table-hover 
+            tr(ng-repeat="poll in pollCtrl.polls")
+              td.text-center(ng-click="pollCtrl.pollSelected(poll)") {{poll.title}}
+
+
+      footer
+        br
+        br
+        br
+        p Running on node with Express, MongoDB, Jade, Stylus and AngularJS
+        p Inspired by Flavio Ferreira
+      
+

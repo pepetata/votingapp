@@ -1,57 +1,35 @@
 'use strict';
 
-var path = process.cwd();
-var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var UserHandler = require( process.cwd() + "/app/controllers/user.js");
+var PollHandler = require( process.cwd() + "/app/controllers/poll.js");
 
-module.exports = function (app, passport) {
 
-	function isLoggedIn (req, res, next) {
-		if (req.isAuthenticated()) {
-			return next();
-		} else {
-			res.redirect('/login');
-		}
-	}
-
-	var clickHandler = new ClickHandler();
+module.exports = function (app, db) {
+	var userHandler = new UserHandler(db);
+	var pollHandler = new PollHandler(db);
 
 	app.route('/')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/index.html');
-		});
-
-	app.route('/login')
 		.get(function (req, res) {
-			res.sendFile(path + '/public/login.html');
+			res.render(process.cwd() + '/public/views/index.pug');
 		});
 
-	app.route('/logout')
-		.get(function (req, res) {
-			req.logout();
-			res.redirect('/login');
-		});
+	app.route('/addUser').post(userHandler.addUser);
+	app.route('/loginUser').post(userHandler.loginUser);
+	app.route('/newPoll').get(pollHandler.newPoll);
+	app.route('/addPoll').post(pollHandler.addPoll);
+	app.route('/listPoll').get(pollHandler.listPoll);
+	app.route('/vote/*').get(pollHandler.votePoll);
+	app.route('/addVote').post(pollHandler.addVote);
+	app.route('/myPolls').get(pollHandler.myPolls);
+	app.route('/deletePoll').post(pollHandler.deletePoll);
+	app.route('/readPoll').post(pollHandler.readPoll);
 
-	app.route('/profile')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/profile.html');
-		});
 
-	app.route('/api/:id')
-		.get(isLoggedIn, function (req, res) {
-			res.json(req.user.github);
-		});
+	app.route('*').get(function(req,res){ console.log(req.url);return;});
 
-	app.route('/auth/github')
-		.get(passport.authenticate('github'));
+	// app.route('/api/:id/clicks')
+	// 	.get(isLoggedIn, clickHandler.getClicks)
+	// 	.post(isLoggedIn, clickHandler.addClick)
+	// 	.delete(isLoggedIn, clickHandler.resetClicks);
 
-	app.route('/auth/github/callback')
-		.get(passport.authenticate('github', {
-			successRedirect: '/',
-			failureRedirect: '/login'
-		}));
-
-	app.route('/api/:id/clicks')
-		.get(isLoggedIn, clickHandler.getClicks)
-		.post(isLoggedIn, clickHandler.addClick)
-		.delete(isLoggedIn, clickHandler.resetClicks);
 };
